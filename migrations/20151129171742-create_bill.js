@@ -20,11 +20,19 @@ module.exports = {
           currencyId: {
             type: Sequelize.INTEGER,
             field: 'currency_id',
-            references: 'Currency',
+            references: 'Currencies',
             referencesKey: 'id'
           },
           balance: {
             type: Sequelize.NUMERIC
+          },
+          createdAt: {
+            allowNull: false,
+            type: Sequelize.DATE
+          },
+          updatedAt: {
+            allowNull: false,
+            type: Sequelize.DATE
           }
         }
     );

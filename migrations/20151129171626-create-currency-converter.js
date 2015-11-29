@@ -13,18 +13,24 @@ module.exports = {
           },
           fromCurrencyId: {
             type: Sequelize.INTEGER,
-            field: 'from_currency_id',
             references: 'Currencies',
             referencesKey: 'id'
           },
           toCurrencyId: {
             type: Sequelize.INTEGER,
-            field: 'to_currency_id',
             references: 'Currencies',
             referencesKey: 'id'
           },
           rate: {
             type: Sequelize.NUMERIC
+          },
+          createdAt: {
+            allowNull: false,
+            type: Sequelize.DATE
+            },
+          updatedAt: {
+            allowNull: false,
+            type: Sequelize.DATE
           }
         }
     );
