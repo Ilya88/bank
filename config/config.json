@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "dbuser",
+    "password": "pass123",
+    "database": "bankdb",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "",
+    "password": null,
+    "database": "",
+    "host": "",
+    "dialect": ""
+  },
+  "production": {
+    "username": "",
+    "password": null,
+    "database": "",
+    "host": "",
+    "dialect": ""
+  }
+}
