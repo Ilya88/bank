@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome #{title}
+
+  each currency in currencies
+    p
+      = currency.code
