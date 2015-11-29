@@ -3,24 +3,25 @@
 module.exports = {
   up: function (queryInterface, Sequelize) {
     return queryInterface.createTable(
-      'Users',
+      'Currencies',
       {
         id: {
+          allowNull: false,
           type: Sequelize.INTEGER,
           primaryKey: true,
           autoIncrement: true
         },
-        login: {
+        title: {
           type: Sequelize.STRING
         },
-        hash: {
-          type: Sequelize.STRING(32)
+        code: {
+          type: Sequelize.STRING(4)
         }
       }
     );
   },
 
   down: function (queryInterface, Sequelize) {
-    return queryInterface.dropTable('Users');
+    return queryInterface.dropTable('Currencies');
   }
 };

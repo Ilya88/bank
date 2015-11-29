@@ -3,9 +3,10 @@
 module.exports = {
   up: function (queryInterface, Sequelize) {
     queryInterface.createTable(
-        'Currency_converter',
+        'CurrencyConverters',
         {
           id: {
+            allowNull: false,
             type: Sequelize.INTEGER,
             primaryKey: true,
             autoIncrement: true
@@ -13,13 +14,13 @@ module.exports = {
           fromCurrencyId: {
             type: Sequelize.INTEGER,
             field: 'from_currency_id',
-            references: 'Currency',
+            references: 'Currencies',
             referencesKey: 'id'
           },
           toCurrencyId: {
             type: Sequelize.INTEGER,
             field: 'to_currency_id',
-            references: 'Currency',
+            references: 'Currencies',
             referencesKey: 'id'
           },
           rate: {
@@ -30,6 +31,6 @@ module.exports = {
   },
 
   down: function (queryInterface, Sequelize) {
-    return queryInterface.dropTable('Currency_converter');
+    return queryInterface.dropTable('CurrencyConverters');
   }
 };
