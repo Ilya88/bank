@@ -1,53 +1,46 @@
-//var express = require('express');
-//var router = express.Router();
-//
-///* GET home page. */
-//router.get('/', function(req, res, next) {
-//  res.render('index', { title: 'Express' });
-//});
-//
-//module.exports = router;
-
-var passport = require('passport');
 var express = require('express');
+var passport = require('passport');
 var router = express.Router();
-var models = require('../models');
 
-router.get('/', function (req, res) {
-  res.render('index', { user : req.user });
-});
-
-router.get('/register', function(req, res) {
-  res.render('register', { });
-});
-
-router.post('/register', function(req, res) {
-  models.User.create({ login : req.body.username , hash: req.body.password}).then(function(user) {
-    if (!user) {
-      return res.render('register', {  });
-    }
-
-    passport.authenticate('local')(req, res, function () {
-      res.redirect('/');
-    });
-  });
-});
-
-router.get('/login', function(req, res) {
-  res.render('login', { user : req.user });
-});
-
-router.post('/login', passport.authenticate('local'), function(req, res) {
+var isAuthenticated = function (req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
   res.redirect('/');
+};
+
+/* Получение страницы авторизации. */
+router.get('/', function(req, res) {
+  res.render('index', { message: req.flash('message') });
 });
+
+
+/* Обработка POST-данных авторизации */
+router.post('/login', passport.authenticate('login', {
+  successRedirect: '/home',
+  failureRedirect: '/',
+  failureFlash : true
+}));
+
+/* Получение страницы регистрации */
+router.get('/signup', function(req, res){
+  res.render('register',{message: req.flash('message')});
+});
+
+/* Обработка регистрационных POST-данных */
+router.post('/signup', passport.authenticate('signup', {
+  successRedirect: '/home',
+  failureRedirect: '/signup',
+  failureFlash : true
+}));
 
 router.get('/logout', function(req, res) {
   req.logout();
   res.redirect('/');
 });
 
-router.get('/ping', function(req, res){
-  res.send("pong!", 200);
+router.get('/home', isAuthenticated, function(req, res) {
+  res.render('home', { user: req.user });
 });
 
 module.exports = router;

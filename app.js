@@ -7,10 +7,12 @@ var bodyParser = require('body-parser');
 var passport = require('passport');
 var cookieSession = require('cookie-session');
 var LocalStrategy = require('passport-local').Strategy;
+var flash = require('express-flash');
+var bcrypt = require('bcryptjs');
+var User = require('./models').User;
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
-var currencies = require('./routes/currencies');
 
 var app = express();
 
@@ -25,58 +27,83 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cookieSession( {secret: 'mySecretKey'} ));
+app.use(cookieSession( {secret: 'afs531a#1'} ));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
-passport.use(new LocalStrategy({
-      // set the field name here
-      usernameField: 'username',
-      passwordField: 'password'
-    },
-    function(login, password, done) {
-      /* get the username and password from the input arguments of the function */
-
-      // query the user from the database
-      // don't care the way I query from database, you can use
-      // any method to query the user from database
-      User.find( { where: {login: username}} )
-        .success(function(user) {
-          if (!user) {
-            // if the user is not exist
-            return done(null, false, {message: "The user is not exist"});
-          } else if (!hashing.compare(password, user.password)) {
-            // if password does not match
-            return done(null, false, {message: "Wrong password"});
-          } else {
-            // if everything is OK, return null as the error
-            // and the authenticated user
-            return done(null, user);
-          }
-        })
-        .error(function(err) {
-          // if command executed with error
-          return done(err);
-        });
-    }
-));
 passport.serializeUser(function(user, done) {
-  done(null, user.id);
+    done(null, JSON.stringify(user));
 });
 
-passport.deserializeUser(function(id, done) {
-  // query the current user from database
-  User.find(id)
-    .success(function(user){
-      done(null, user);
-    }).error(function(err) {
-    done(new Error('User ' + id + ' does not exist'));
-  });
+passport.deserializeUser(function(data, done) {
+    try {
+        done(null, JSON.parse(data));
+    } catch (e) {
+        done(e)
+    }
 });
+
+passport.use('login', new LocalStrategy({
+        passReqToCallback : true
+    },
+    function(req, username, password, done) {
+        // проверка в mongo, существует ли пользователь с таким логином
+        User.findOne({ where: {username: username}}).then(
+            function(user) {
+                // Пользователь не существует, ошибка входа и перенаправление обратно
+                if (!user) {
+                    console.log('User Not Found with username '+username);
+                    return done(null, false,
+                        req.flash('message', 'User Not found.'));
+                }
+                // Пользователь существует, но пароль введен неверно, ошибка входа
+                if (!isValidPassword(user, password)){
+                    console.log('Invalid Password');
+                    return done(null, false,
+                        req.flash('message', 'Invalid Password'));
+                }
+                // Пользователь существует и пароль верен, возврат пользователя из
+                // метода done, что будет означать успешную аутентификацию
+                return done(null, user);
+            }
+        );
+    })
+);
+
+var isValidPassword = function(user, password){
+    return bcrypt.compareSync(password, user.hash);
+};
+
+passport.use('signup', new LocalStrategy({
+        passReqToCallback : true
+    },
+    function(req, username, password, done) {
+        User.findOne({where: {username: username}}).then(
+            function(user) {
+            if (user) {
+                console.log('User already exists');
+                return done(null, false,
+                    req.flash('message','User already Exists'));
+            } else {
+                User.create({ username : username, hash: createHash(password)}).then(function(user) {
+                    if (!user) {
+                        req.flash('message','Error');
+                    }
+                    console.log('User Registration succesful');
+                    return done(null, user);
+                });
+            }
+        });
+    })
+);
+
+var createHash = function(password){
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(10), null);
+};
 
 app.use('/', routes);
 app.use('/users', users);
-app.use('/currencies', currencies);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
