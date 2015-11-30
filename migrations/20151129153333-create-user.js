@@ -11,11 +11,11 @@ module.exports = {
           primaryKey: true,
           autoIncrement: true
         },
-        login: {
+        username: {
           type: Sequelize.STRING
         },
         hash: {
-          type: Sequelize.STRING(32)
+          type: Sequelize.STRING
         },
         createdAt: {
           allowNull: false,
