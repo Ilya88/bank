@@ -1,13 +1,7 @@
 var express = require('express');
 var passport = require('passport');
 var router = express.Router();
-
-var isAuthenticated = function (req, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/');
-};
+var models  = require('../models');
 
 /* Получение страницы авторизации. */
 router.get('/', function(req, res) {
@@ -39,8 +33,23 @@ router.get('/logout', function(req, res) {
   res.redirect('/');
 });
 
-router.get('/home', isAuthenticated, function(req, res) {
-  res.render('home', { user: req.user });
+router.get('/home', function (req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/');
+}, function(req, res) {
+  models.Bill.findAll({
+    where: {userId: req.user.id},
+    include: [
+      { model: models.Currency }
+    ]
+  }).then(function(bills) {
+    res.render('home', {
+      user: req.user,
+      bills: bills
+    });
+  });
 });
 
 module.exports = router;
