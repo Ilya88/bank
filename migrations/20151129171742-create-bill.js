@@ -13,13 +13,11 @@ module.exports = {
           },
           userId: {
             type: Sequelize.INTEGER,
-            field: 'user_id',
             references: 'Users',
             referencesKey: 'id'
           },
           currencyId: {
             type: Sequelize.INTEGER,
-            field: 'currency_id',
             references: 'Currencies',
             referencesKey: 'id'
           },
