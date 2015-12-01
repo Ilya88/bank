@@ -1,0 +1,14 @@
+extends ../layout
+
+block content
+    div.container
+        div.row
+            h1 Take money
+                div.account-wall
+                    form(class='form-take', action='/billing/#{bill.id}', method='POST')
+                        input(type='text', name='debit'  class='form-control', value='0',required, autofocus)
+                        span
+                            = bill.Currency.code
+                        button(class='btn btn-lg btn-primary btn-block', type='submit') Open
+
+                a(href='/home', class='text-center') Cancel

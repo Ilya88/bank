@@ -3,3 +3,18 @@ block content
 
     p You are currently logged in as #{user.username}
     a(href="/logout") Logout
+
+    table(style="border: solid black 1px")
+        if bills.length == 0
+            tr
+                td No bills
+        else
+            each bill in bills
+                tr
+                    td Bill №#{bill.id}
+                    td #{bill.Currency.code}
+                    td #{bill.balance}
+                    td
+                        a(href="/billing/#{bill.id}") ->
+
+    a(href="/billing/create") Open new bill

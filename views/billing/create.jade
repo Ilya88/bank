@@ -1,0 +1,16 @@
+extends ../layout
+
+block content
+    div.container
+        div.row
+            h1 Create new bill
+                div.account-wall
+                    form(class='form-create', action='/billing/create', method='POST')
+                        input(type='text', name='balance'  class='form-control', value='0',required, autofocus)
+                        select(name='currency_id')
+                            each currency in currencies
+                                option(value=currency.id)
+                                    = currency.code
+
+                        button(class='btn btn-lg btn-primary btn-block', type='submit') Open
+                a(href='/home', class='text-center') Cancel

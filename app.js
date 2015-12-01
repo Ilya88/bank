@@ -13,6 +13,7 @@ var User = require('./models').User;
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var billing = require('./routes/billing');
 
 var app = express();
 
@@ -104,6 +105,7 @@ var createHash = function(password){
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/billing', billing);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
