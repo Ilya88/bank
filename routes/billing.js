@@ -1,6 +1,7 @@
 var models  = require('../models');
 var express = require('express');
 var router = express.Router();
+var sequelize = models.sequelize;
 
 var isAuthenticated = function (req, res, next) {
     if (req.isAuthenticated()) {
@@ -119,15 +120,30 @@ router.post('/:id/transfer', isAuthenticated, function(req, res) {
             }).then(
                 function(billTo) {
                     if (billFrom.currencyId == billTo.currencyId) {
-                        billTo.increment({ balance: transfer }).then(
-                            function () {
-                                billFrom.decrement({ balance: transfer }).then(
-                                    function() {
-                                        res.redirect('/billing/' + billTo.id);
-                                    }
-                                );
-                            }
-                        );
+                        sequelize.transaction({ autocommit: false }).then(function (t1) {
+                            billTo.increment(
+                                { balance: transfer },
+                                { transaction: t1 }
+                            ).then(
+                                function () {
+                                    billFrom.decrement(
+                                        { balance: transfer },
+                                        { transaction: t1 }
+                                    ).then(
+                                        function () {
+                                            t1.commit();
+                                            return res.redirect('/billing/' + billTo.id);
+                                        }
+                                    ).catch(
+                                        function () {
+                                            t1.rollback();
+                                            req.flash('message', 'Not enough coins');
+                                            return res.redirect('/billing/' + req.params.id + '/transfer');
+                                        }
+                                    );
+                                }
+                            )
+                        });
                     } else {
                         models.CurrencyConverter.findOne({
                             where: {
@@ -136,15 +152,30 @@ router.post('/:id/transfer', isAuthenticated, function(req, res) {
                             }
                         }).then(
                             function(convertItem) {
-                                billTo.increment({ balance: (convertItem.rate * transfer) }).then(
-                                    function () {
-                                        billFrom.decrement({ balance: transfer }).then(
-                                            function() {
-                                                res.redirect('/billing/' + billTo.id);
-                                            }
-                                        );
-                                    }
-                                );
+                                sequelize.transaction({ autocommit: false }).then(function (t2) {
+                                    billTo.increment(
+                                        { balance: (convertItem.rate * transfer) },
+                                        { transaction: t2 }
+                                    ).then(
+                                        function () {
+                                            billFrom.decrement(
+                                                { balance: transfer },
+                                                { transaction: t2 }
+                                            ).then(
+                                                function () {
+                                                    t2.commit();
+                                                    return res.redirect('/billing/' + billTo.id);
+                                                }
+                                            ).catch(
+                                                function () {
+                                                    t2.rollback();
+                                                    req.flash('message', 'Not enough coins');
+                                                    return res.redirect('/billing/' + req.params.id + '/transfer');
+                                                }
+                                            );
+                                        }
+                                    )
+                                });
                             }
                         );
                     }
