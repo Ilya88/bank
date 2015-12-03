@@ -2,7 +2,6 @@ block content
     p Welcome
 
     p You are currently logged in as #{user.username}
-    a(href="/logout") Logout
 
     table(style="border: solid black 1px")
         if bills.length == 0
@@ -18,3 +17,5 @@ block content
                         a(href="/billing/#{bill.id}") ->
 
     a(href="/billing/create") Open new bill
+    br
+    a(href="/logout") Logout

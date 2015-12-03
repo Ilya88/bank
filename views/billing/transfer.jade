@@ -1,0 +1,22 @@
+block content
+    p Select a transfer
+
+    if message
+        h1.text-center.error-message #{message}
+
+    table(style="border: solid black 1px")
+        if bills.length == 0
+            tr
+                td No bills
+        else
+            each bill in bills
+                tr
+                    td Bill №#{bill.id}
+                        form(class='form-take', action='/billing/#{billId}/transfer', method='POST')
+                            input(type='text', name='transfer'  class='form-control', value='0',required)
+                            input(type='hidden', name='bill_id'  class='form-control', value=bill.id)
+                            p #{bill.Currency.code} #{bill.balance}
+                                button(class='btn btn-lg btn-primary btn-block', type='submit') Send
+
+
+    a(href="/billing/#{billId}") Cancel
