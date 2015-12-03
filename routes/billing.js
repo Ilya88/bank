@@ -3,6 +3,7 @@ var express = require('express');
 var router = express.Router();
 var sequelize = models.sequelize;
 
+// Проверка авторизации пользователя
 var isAuthenticated = function (req, res, next) {
     if (req.isAuthenticated()) {
         return next();
@@ -10,6 +11,7 @@ var isAuthenticated = function (req, res, next) {
     res.redirect('/login');
 };
 
+// Получение страницы открытия лицевого счета
 router.get('/create', isAuthenticated, function(req, res) {
     models.Currency.findAll().then(function(currencies) {
         res.render('billing/create', {
@@ -18,6 +20,7 @@ router.get('/create', isAuthenticated, function(req, res) {
     });
 });
 
+// Обработка POST-данных открытия счета
 router.post('/create', isAuthenticated, function(req, res) {
     models.Bill.create({
         userId: req.user.id,
@@ -31,7 +34,7 @@ router.post('/create', isAuthenticated, function(req, res) {
     });
 });
 
-
+// Получение страницы изменения лицевого счета
 router.get('/:id', isAuthenticated, function(req, res) {
     models.Bill.findOne({
         where: {id: req.params.id, userId: req.user.id},
@@ -47,6 +50,7 @@ router.get('/:id', isAuthenticated, function(req, res) {
     });
 });
 
+// Обработка POST-данных изменения счета (пополнение и списание)
 router.post('/:id', isAuthenticated, function(req, res) {
     models.Bill.findOne({
         where: {id: req.params.id, userId: req.user.id}
@@ -75,6 +79,7 @@ router.post('/:id', isAuthenticated, function(req, res) {
     });
 });
 
+// Получение списка счетов для перевода
 router.get('/:id/transfer', isAuthenticated, function(req, res) {
     models.Bill.findAll({
         where: {
@@ -99,6 +104,7 @@ router.get('/:id/transfer', isAuthenticated, function(req, res) {
     });
 });
 
+// Обработка POST-данных авторизации переводов со счета на счет
 router.post('/:id/transfer', isAuthenticated, function(req, res) {
     if (isNaN(req.body.transfer) || req.body.transfer <= 0) {
         req.flash('message', 'Invalid value');

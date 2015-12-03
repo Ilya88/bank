@@ -3,36 +3,37 @@ var passport = require('passport');
 var router = express.Router();
 var models  = require('../models');
 
-/* Получение страницы авторизации. */
+// Получение страницы авторизации
 router.get('/login', function(req, res) {
   res.render('index', { message: req.flash('message') });
 });
 
-
-/* Обработка POST-данных авторизации */
+// Обработка POST-данных авторизации
 router.post('/login', passport.authenticate('login', {
   successRedirect: '/',
   failureRedirect: '/login',
   failureFlash : true
 }));
 
-/* Получение страницы регистрации */
+// Получение страницы регистрации
 router.get('/signup', function(req, res){
   res.render('register',{message: req.flash('message')});
 });
 
-/* Обработка регистрационных POST-данных */
+// Обработка регистрационных POST-данных
 router.post('/signup', passport.authenticate('signup', {
   successRedirect: '/',
   failureRedirect: '/signup',
   failureFlash : true
 }));
 
+// Выход
 router.get('/logout', function(req, res) {
   req.logout();
   res.redirect('/login');
 });
 
+// Получение домашней страницы
 router.get('/', function (req, res, next) {
   if (req.isAuthenticated()) {
     return next();
