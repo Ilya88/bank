@@ -15,6 +15,7 @@ var isAuthenticated = function (req, res, next) {
 router.get('/create', isAuthenticated, function(req, res) {
     models.Currency.findAll().then(function(currencies) {
         res.render('billing/create', {
+            message: req.flash('message'),
             currencies: currencies
         });
     });
@@ -22,6 +23,10 @@ router.get('/create', isAuthenticated, function(req, res) {
 
 // Обработка POST-данных открытия счета
 router.post('/create', isAuthenticated, function(req, res) {
+    if (isNaN(req.body.balance) || req.body.balance < 0) {
+        req.flash('message', 'Invalid value. Try again');
+        return res.redirect('/billing/create');
+    }
     models.Bill.create({
         userId: req.user.id,
         balance: req.body.balance,
