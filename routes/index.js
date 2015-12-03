@@ -4,15 +4,15 @@ var router = express.Router();
 var models  = require('../models');
 
 /* Получение страницы авторизации. */
-router.get('/', function(req, res) {
+router.get('/login', function(req, res) {
   res.render('index', { message: req.flash('message') });
 });
 
 
 /* Обработка POST-данных авторизации */
 router.post('/login', passport.authenticate('login', {
-  successRedirect: '/home',
-  failureRedirect: '/',
+  successRedirect: '/',
+  failureRedirect: '/login',
   failureFlash : true
 }));
 
@@ -23,21 +23,21 @@ router.get('/signup', function(req, res){
 
 /* Обработка регистрационных POST-данных */
 router.post('/signup', passport.authenticate('signup', {
-  successRedirect: '/home',
+  successRedirect: '/',
   failureRedirect: '/signup',
   failureFlash : true
 }));
 
 router.get('/logout', function(req, res) {
   req.logout();
-  res.redirect('/');
+  res.redirect('/login');
 });
 
-router.get('/home', function (req, res, next) {
+router.get('/', function (req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect('/');
+  res.redirect('/login');
 }, function(req, res) {
   models.Bill.findAll({
     where: {userId: req.user.id},

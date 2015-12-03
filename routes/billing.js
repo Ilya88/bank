@@ -7,7 +7,7 @@ var isAuthenticated = function (req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
-    res.redirect('/');
+    res.redirect('/login');
 };
 
 router.get('/create', isAuthenticated, function(req, res) {
@@ -27,7 +27,7 @@ router.post('/create', isAuthenticated, function(req, res) {
         if (!bill) {
             req.flash('message','Error');
         }
-        res.redirect('/home');
+        res.redirect('/');
     });
 });
 
@@ -54,13 +54,13 @@ router.post('/:id', isAuthenticated, function(req, res) {
         if (!isNaN(req.body.credit) && req.body.credit > 0) {
             bill.increment({ balance: req.body.credit }).then(
                 function() {
-                    res.redirect('/home');
+                    res.redirect('/');
                 }
             );
         } else if (!isNaN(req.body.debit) && req.body.debit > 0) {
             bill.decrement({ balance: req.body.debit }).then(
                 function() {
-                    res.redirect('/home');
+                    res.redirect('/');
                 }
             ).catch(
                 function (err) {
