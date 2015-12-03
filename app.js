@@ -80,6 +80,9 @@ passport.use('signup', new LocalStrategy({
         passReqToCallback : true
     },
     function(req, username, password, done) {
+        if (password != req.body.confirm) {
+            return done(null, false, req.flash('message','Password not confirm!'));
+        }
         User.findOne({where: {username: username}}).then(
             function(user) {
             if (user) {
