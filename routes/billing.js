@@ -50,25 +50,27 @@ router.post('/:id', isAuthenticated, function(req, res) {
     models.Bill.findOne({
         where: {id: req.params.id, userId: req.user.id}
     }).then(function(bill) {
-        var newValue = bill.balance;
         if (!isNaN(req.body.credit) && req.body.credit > 0) {
-            newValue += Number(req.body.credit);
+            bill.increment({ balance: req.body.credit }).then(
+                function() {
+                    res.redirect('/home');
+                }
+            );
         } else if (!isNaN(req.body.debit) && req.body.debit > 0) {
-            newValue -= Number(req.body.debit);
+            bill.decrement({ balance: req.body.debit }).then(
+                function() {
+                    res.redirect('/home');
+                }
+            ).catch(
+                function (err) {
+                    req.flash('message', 'Error');
+                    res.redirect('/billing/' + req.params.id);
+                }
+            );
         } else {
             req.flash('message', 'Invalid value');
             return res.redirect('/billing/' + req.params.id);
         }
-        models.Bill.update(
-            { balance: newValue }, {where: {id: req.params.id, userId: req.user.id}}
-        ).then(function(bill) {
-            res.redirect('/home');
-        }).catch(
-            function (err) {
-                req.flash('message', 'Error');
-                res.redirect('/billing/' + req.params.id);
-            }
-        );
     });
 });
 
@@ -101,7 +103,7 @@ router.post('/:id/transfer', isAuthenticated, function(req, res) {
         req.flash('message', 'Invalid value');
         return res.redirect('/billing/' + req.params.id + '/transfer');
     }
-    var transfer = Number(req.body.transfer);
+    var transfer = req.body.transfer;
     return models.Bill.findOne({
         where: {
             userId: req.user.id,
@@ -117,15 +119,9 @@ router.post('/:id/transfer', isAuthenticated, function(req, res) {
             }).then(
                 function(billTo) {
                     if (billFrom.currencyId == billTo.currencyId) {
-                        models.Bill.update(
-                            { balance: billTo.balance + transfer },
-                            { where: {id: billTo.id, userId: req.user.id} }
-                        ).then(
-                            function() {
-                                models.Bill.update(
-                                    { balance: billFrom.balance - transfer },
-                                    { where: {id: billFrom.id, userId: req.user.id} }
-                                ).then(
+                        billTo.increment({ balance: transfer }).then(
+                            function () {
+                                billFrom.decrement({ balance: transfer }).then(
                                     function() {
                                         res.redirect('/billing/' + billTo.id);
                                     }
@@ -140,14 +136,9 @@ router.post('/:id/transfer', isAuthenticated, function(req, res) {
                             }
                         }).then(
                             function(convertItem) {
-                                var newValue = billTo.balance + convertItem.rate * transfer;
-                                models.Bill.update(
-                                    { balance: newValue }, {where: {id: billTo.id, userId: req.user.id}}
-                                ).then(
-                                    function() {
-                                        models.Bill.update(
-                                            { balance: billFrom.balance - transfer }, {where: {id: billFrom.id, userId: req.user.id}}
-                                        ).then(
+                                billTo.increment({ balance: (convertItem.rate * transfer) }).then(
+                                    function () {
+                                        billFrom.decrement({ balance: transfer }).then(
                                             function() {
                                                 res.redirect('/billing/' + billTo.id);
                                             }
